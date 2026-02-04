@@ -345,7 +345,7 @@ function applyPartialTransformToFunction(
                                 LocMessage.argAssignmentParamFunction().format({
                                     argType: evaluator.printType(argTypeResult.type),
                                     paramType: evaluator.printType(paramType),
-                                    functionName: origFunctionType.shared.name,
+                                    functionName: origFunctionType.shared.fullName || origFunctionType.shared.name,
                                     paramName: paramListDetails.params[paramListDetails.kwargsIndex].param.name ?? '',
                                 }),
                                 arg.valueExpression ?? errorNode

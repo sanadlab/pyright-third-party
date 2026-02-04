@@ -878,7 +878,7 @@ function narrowTypeBasedOnClassPattern(
     if (!TypeBase.isInstantiable(exprType) && !isNever(exprType)) {
         evaluator.addDiagnostic(
             DiagnosticRule.reportGeneralTypeIssues,
-            LocAddendum.typeNotClass().format({ type: evaluator.printType(exprType) }),
+            LocAddendum.typeNotClass().format({ type: evaluator.printType(exprType, { useFullyQualifiedNames: true }) }),
             pattern.d.className
         );
 
@@ -1800,7 +1800,7 @@ export function assignTypeToPatternTargets(
                         diagAddendum.addMessage(
                             LocAddendum.typeOfSymbol().format({
                                 name: '_',
-                                type: evaluator.printType(narrowedType, { expandTypeAlias: true }),
+                                type: evaluator.printType(narrowedType, { expandTypeAlias: true, useFullyQualifiedNames: true }),
                             })
                         );
                         evaluator.addDiagnostic(
@@ -2006,21 +2006,21 @@ export function validateClassPattern(evaluator: TypeEvaluator, pattern: PatternC
     ) {
         evaluator.addDiagnostic(
             DiagnosticRule.reportGeneralTypeIssues,
-            LocMessage.classPatternTypeAlias().format({ type: evaluator.printType(exprType) }),
+            LocMessage.classPatternTypeAlias().format({ type: evaluator.printType(exprType, { useFullyQualifiedNames: true }) }),
             pattern.d.className
         );
     } else if (!isInstantiableClass(exprType)) {
         if (!isNever(exprType)) {
             evaluator.addDiagnostic(
                 DiagnosticRule.reportGeneralTypeIssues,
-                LocAddendum.typeNotClass().format({ type: evaluator.printType(exprType) }),
+                LocAddendum.typeNotClass().format({ type: evaluator.printType(exprType, { useFullyQualifiedNames: true }) }),
                 pattern.d.className
             );
         }
     } else if (ClassType.isNewTypeClass(exprType)) {
         evaluator.addDiagnostic(
             DiagnosticRule.reportGeneralTypeIssues,
-            LocMessage.classPatternNewType().format({ type: evaluator.printType(exprType) }),
+            LocMessage.classPatternNewType().format({ type: evaluator.printType(exprType, { useFullyQualifiedNames: true }) }),
             pattern.d.className
         );
     } else {
@@ -2234,7 +2234,7 @@ function reportUnnecessaryPattern(evaluator: TypeEvaluator, pattern: PatternAtom
 
     evaluator.addDiagnostic(
         DiagnosticRule.reportUnnecessaryComparison,
-        LocMessage.patternNeverMatches().format({ type: evaluator.printType(subjectType) }),
+        LocMessage.patternNeverMatches().format({ type: evaluator.printType(subjectType, { useFullyQualifiedNames: true }) }),
         pattern
     );
 }

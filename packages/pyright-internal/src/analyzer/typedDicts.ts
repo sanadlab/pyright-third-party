@@ -1178,7 +1178,7 @@ export function assignTypedDictToTypedDict(
                 diag?.createAddendum().addMessage(
                     LocAddendum.typedDictFieldMissing().format({
                         name,
-                        type: evaluator.printType(ClassType.cloneAsInstance(srcType)),
+                        type: evaluator.printType(ClassType.cloneAsInstance(srcType), { useFullyQualifiedNames: true }),
                     })
                 );
                 typesAreConsistent = false;
@@ -1208,7 +1208,7 @@ export function assignTypedDictToTypedDict(
                 diag?.createAddendum().addMessage(
                     message.format({
                         name,
-                        type: evaluator.printType(ClassType.cloneAsInstance(destType)),
+                        type: evaluator.printType(ClassType.cloneAsInstance(destType), { useFullyQualifiedNames: true }),
                     })
                 );
                 typesAreConsistent = false;
@@ -1218,7 +1218,7 @@ export function assignTypedDictToTypedDict(
                 diag?.createAddendum().addMessage(
                     LocAddendum.typedDictFieldNotReadOnly().format({
                         name,
-                        type: evaluator.printType(ClassType.cloneAsInstance(destType)),
+                        type: evaluator.printType(ClassType.cloneAsInstance(destType), { useFullyQualifiedNames: true }),
                     })
                 );
                 typesAreConsistent = false;
@@ -1264,7 +1264,7 @@ export function assignTypedDictToTypedDict(
                 subDiag?.addMessage(
                     LocAddendum.typedDictExtraFieldNotAllowed().format({
                         name,
-                        type: evaluator.printType(ClassType.cloneAsInstance(destType)),
+                        type: evaluator.printType(ClassType.cloneAsInstance(destType), { useFullyQualifiedNames: true }),
                     })
                 );
                 typesAreConsistent = false;
@@ -1294,7 +1294,7 @@ export function assignTypedDictToTypedDict(
                     subDiag?.addMessage(
                         LocAddendum.typedDictExtraFieldTypeMismatch().format({
                             name,
-                            type: evaluator.printType(ClassType.cloneAsInstance(destType)),
+                            type: evaluator.printType(ClassType.cloneAsInstance(destType), { useFullyQualifiedNames: true }),
                         })
                     );
                     typesAreConsistent = false;
@@ -1302,7 +1302,7 @@ export function assignTypedDictToTypedDict(
                     diag?.createAddendum().addMessage(
                         LocAddendum.typedDictFieldNotReadOnly().format({
                             name,
-                            type: evaluator.printType(ClassType.cloneAsInstance(srcType)),
+                            type: evaluator.printType(ClassType.cloneAsInstance(srcType), { useFullyQualifiedNames: true }),
                         })
                     );
                     typesAreConsistent = false;
@@ -1324,7 +1324,7 @@ export function assignTypedDictToTypedDict(
             subDiag?.addMessage(
                 LocAddendum.typedDictExtraFieldTypeMismatch().format({
                     name: 'extra_items',
-                    type: evaluator.printType(ClassType.cloneAsInstance(srcType)),
+                    type: evaluator.printType(ClassType.cloneAsInstance(srcType), { useFullyQualifiedNames: true }),
                 })
             );
             typesAreConsistent = false;
@@ -1400,7 +1400,7 @@ export function assignToTypedDict(
                             subDiag.addMessage(
                                 LocAddendum.typedDictFieldTypeMismatch().format({
                                     name: 'extra_items',
-                                    type: evaluator.printType(valueTypes[index].type),
+                                    type: evaluator.printType(valueTypes[index].type, { useFullyQualifiedNames: true }),
                                 })
                             );
 
@@ -1416,7 +1416,7 @@ export function assignToTypedDict(
                         subDiag.addMessage(
                             LocAddendum.typedDictFieldUndefined().format({
                                 name: keyType.priv.literalValue as string,
-                                type: evaluator.printType(ClassType.cloneAsInstance(classType)),
+                                type: evaluator.printType(ClassType.cloneAsInstance(classType), { useFullyQualifiedNames: true }),
                             })
                         );
 
@@ -1439,7 +1439,7 @@ export function assignToTypedDict(
                         subDiag.addMessage(
                             LocAddendum.typedDictFieldTypeMismatch().format({
                                 name: keyType.priv.literalValue as string,
-                                type: evaluator.printType(valueTypes[index].type),
+                                type: evaluator.printType(valueTypes[index].type, { useFullyQualifiedNames: true }),
                             })
                         );
 
@@ -1473,7 +1473,7 @@ export function assignToTypedDict(
                 diagAddendum.addMessage(
                     LocAddendum.typedDictFieldRequired().format({
                         name,
-                        type: evaluator.printType(classType),
+                        type: evaluator.printType(classType, { useFullyQualifiedNames: true }),
                     })
                 );
             }
@@ -1540,7 +1540,7 @@ export function getTypeOfIndexedTypedDict(
                 diag.addMessage(
                     LocAddendum.keyUndefined().format({
                         name: entryName,
-                        type: evaluator.printType(baseType),
+                        type: evaluator.printType(baseType, { useFullyQualifiedNames: true }),
                     })
                 );
                 allDiagsInvolveNotRequiredKeys = false;
@@ -1549,14 +1549,14 @@ export function getTypeOfIndexedTypedDict(
                 diag.addMessage(
                     LocAddendum.keyNotRequired().format({
                         name: entryName,
-                        type: evaluator.printType(baseType),
+                        type: evaluator.printType(baseType, { useFullyQualifiedNames: true }),
                     })
                 );
             } else if (entry.isReadOnly && usage.method !== 'get') {
                 diag.addMessage(
                     LocAddendum.keyReadOnly().format({
                         name: entryName,
-                        type: evaluator.printType(baseType),
+                        type: evaluator.printType(baseType, { useFullyQualifiedNames: true }),
                     })
                 );
             }
@@ -1577,7 +1577,7 @@ export function getTypeOfIndexedTypedDict(
             return entry.valueType;
         }
 
-        diag.addMessage(LocAddendum.typeNotStringLiteral().format({ type: evaluator.printType(subtype) }));
+        diag.addMessage(LocAddendum.typeNotStringLiteral().format({ type: evaluator.printType(subtype, { useFullyQualifiedNames: true }) }));
         allDiagsInvolveNotRequiredKeys = false;
         return UnknownType.create();
     });

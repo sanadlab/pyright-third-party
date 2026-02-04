@@ -19,6 +19,7 @@ import * as os from 'os';
 
 import { ChildProcess, fork } from 'child_process';
 import { AnalysisResults } from './analyzer/analysis';
+import { ImportType } from './analyzer/importResult';
 import { PackageTypeReport, TypeKnownStatus } from './analyzer/packageTypeReport';
 import { PackageTypeVerifier } from './analyzer/packageTypeVerifier';
 import { AnalyzerService } from './analyzer/service';
@@ -45,6 +46,8 @@ import { Uri } from './common/uri/uri';
 import { getFileSpec, tryStat } from './common/uri/uriUtils';
 import { PyrightFileSystem } from './pyrightFileSystem';
 
+import { getTopLevelImports } from './analyzer/importStatementUtils';
+
 const toolName = 'pyright';
 
 type SeverityLevel = 'error' | 'warning' | 'information';
@@ -65,6 +68,7 @@ interface PyrightJsonResults {
     generalDiagnostics: PyrightJsonDiagnostic[];
     summary: PyrightJsonSummary;
     typeCompleteness?: PyrightTypeCompletenessReport;
+    thirdPartyLibraries?: string[]; // list of third-party libraries
 }
 
 // The schema for this object is publicly documented. Do not change it.
@@ -476,11 +480,17 @@ async function runSingleThreaded(
             );
 
             if (args.outputjson) {
+                // Collect all imports and get unique third-party libraries
+                const allImports = collectAllImports(service);
+                const thirdPartyImports = allImports.filter((i) => i.isThirdParty);
+                const uniqueThirdPartyNames = [...new Set(thirdPartyImports.map((i) => i.importName))].sort();
+
                 const report = reportDiagnosticsAsJson(
                     fileDiagnostics,
                     minSeverityLevel,
                     results.filesInProgram,
-                    results.elapsedTime
+                    results.elapsedTime,
+                    uniqueThirdPartyNames
                 );
                 errorCount += report.errorCount;
                 if (treatWarningsAsErrors) {
@@ -643,11 +653,17 @@ async function runMultiThreaded(
                     );
 
                     if (args.outputjson) {
+                        // Collect all imports and get unique third-party libraries
+                        const allImports = collectAllImports(service);
+                        const thirdPartyImports = allImports.filter((i) => i.isThirdParty);
+                        const uniqueThirdPartyNames = [...new Set(thirdPartyImports.map((i) => i.importName))].sort();
+
                         const report = reportDiagnosticsAsJson(
                             fileDiagnostics,
                             minSeverityLevel,
                             sourceFilesToAnalyze.length,
-                            elapsedTime
+                            elapsedTime,
+                            uniqueThirdPartyNames
                         );
                         errorCount += report.errorCount;
                         if (treatWarningsAsErrors) {
@@ -876,6 +892,60 @@ function verifyPackageTypes(
         console.error(`Error occurred when verifying types: ` + errMessage);
         return ExitStatus.FatalError;
     }
+}
+
+function collectAllImports(service: AnalyzerService) {
+    const program = service.backgroundAnalysisProgram.program;
+    const allImports: Array<{
+        file: string;
+        importName: string;
+        importType: ImportType;
+        isThirdParty: boolean;
+    }> = [];
+
+    // Get all source files
+    const sourceFiles = program.getSourceFileInfoList();
+
+    for (const sourceFileInfo of sourceFiles) {
+        // Skip typeshed files if you only want user code
+        // if (sourceFileInfo.isTypeshedFile) continue;
+
+        const sourceFile = sourceFileInfo.sourceFile;
+        const fileUri = sourceFileInfo.uri;
+
+        // Get imports directly from SourceFile
+        // This will be empty if the file hasn't been parsed yet
+        const imports = sourceFile.getImports();
+
+        if (imports.length > 0) {
+            for (const importResult of imports) {
+                allImports.push({
+                    file: fileUri.getFilePath(),
+                    importName: importResult.importName,
+                    importType: importResult.importType,
+                    isThirdParty: importResult.importType === ImportType.ThirdParty,
+                });
+            }
+        } else {
+            // Fallback: Try to get imports from parse tree if available
+            const parseResults = sourceFile.getParseResults();
+            if (parseResults) {
+                const importStatements = getTopLevelImports(parseResults.parserOutput.parseTree);
+                for (const importStatement of importStatements.orderedImports) {
+                    if (importStatement.importResult) {
+                        allImports.push({
+                            file: fileUri.getFilePath(),
+                            importName: importStatement.moduleName,
+                            importType: importStatement.importResult.importType,
+                            isThirdParty: importStatement.importResult.importType === ImportType.ThirdParty,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    return allImports;
 }
 
 function accumulateReportDiagnosticStats(diag: PyrightJsonDiagnostic, report: PyrightJsonResults) {
@@ -1160,7 +1230,8 @@ function reportDiagnosticsAsJson(
     fileDiagnostics: FileDiagnostics[],
     minSeverityLevel: SeverityLevel,
     filesInProgram: number,
-    timeInSec: number
+    timeInSec: number,
+    thirdPartyLibraries?: string[]
 ): DiagnosticResult {
     const report: PyrightJsonResults = {
         version: getVersionString(),
@@ -1174,6 +1245,11 @@ function reportDiagnosticsAsJson(
             timeInSec,
         },
     };
+
+    // Add third-party libraries if provided
+    if (thirdPartyLibraries && thirdPartyLibraries.length > 0) {
+        report.thirdPartyLibraries = thirdPartyLibraries;
+    }
 
     fileDiagnostics.forEach((fileDiag) => {
         fileDiag.diagnostics.sort(compareDiagnostics).forEach((diag) => {

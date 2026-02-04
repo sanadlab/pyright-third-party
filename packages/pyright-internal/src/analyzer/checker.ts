@@ -480,7 +480,10 @@ export class Checker extends ParseTreeWalker {
                                 const diagAddendum = new DiagnosticAddendum();
                                 diagAddendum.addMessage(
                                     LocAddendum.paramType().format({
-                                        paramType: this._evaluator.printType(paramType, { expandTypeAlias: true }),
+                                        paramType: this._evaluator.printType(paramType, {
+                                            expandTypeAlias: true,
+                                            useFullyQualifiedNames: true,
+                                        }),
                                     })
                                 );
                                 this._evaluator.addDiagnostic(
@@ -780,7 +783,10 @@ export class Checker extends ParseTreeWalker {
                 this._evaluator.addDiagnostic(
                     DiagnosticRule.reportUnknownLambdaType,
                     LocMessage.lambdaReturnTypePartiallyUnknown().format({
-                        returnType: this._evaluator.printType(returnType, { expandTypeAlias: true }),
+                        returnType: this._evaluator.printType(returnType, {
+                            expandTypeAlias: true,
+                            useFullyQualifiedNames: true,
+                        }),
                     }),
                     node.d.expr
                 );
@@ -812,7 +818,7 @@ export class Checker extends ParseTreeWalker {
                     this._evaluator.addDiagnostic(
                         DiagnosticRule.reportUnusedCallResult,
                         LocMessage.unusedCallResult().format({
-                            type: this._evaluator.printType(returnType),
+                            type: this._evaluator.printType(returnType, { useFullyQualifiedNames: true }),
                         }),
                         node
                     );
@@ -843,7 +849,7 @@ export class Checker extends ParseTreeWalker {
                     this._evaluator.addDiagnostic(
                         DiagnosticRule.reportUnusedCallResult,
                         LocMessage.unusedCallResult().format({
-                            type: this._evaluator.printType(returnType),
+                            type: this._evaluator.printType(returnType, { useFullyQualifiedNames: true }),
                         }),
                         node
                     );
@@ -1022,8 +1028,10 @@ export class Checker extends ParseTreeWalker {
                         this._evaluator.addDiagnostic(
                             DiagnosticRule.reportReturnType,
                             LocMessage.returnTypeMismatch().format({
-                                exprType: this._evaluator.printType(returnType),
-                                returnType: this._evaluator.printType(declaredReturnType),
+                                exprType: this._evaluator.printType(returnType, { useFullyQualifiedNames: true }),
+                                returnType: this._evaluator.printType(declaredReturnType, {
+                                    useFullyQualifiedNames: true,
+                                }),
                             }) + diagAddendum.getString(),
                             node.d.expr ?? node,
                             returnTypeResult.expectedTypeDiagAddendum?.getEffectiveTextRange()
@@ -1042,7 +1050,10 @@ export class Checker extends ParseTreeWalker {
                 this._evaluator.addDiagnostic(
                     DiagnosticRule.reportUnknownVariableType,
                     LocMessage.returnTypePartiallyUnknown().format({
-                        returnType: this._evaluator.printType(returnType, { expandTypeAlias: true }),
+                        returnType: this._evaluator.printType(returnType, {
+                            expandTypeAlias: true,
+                            useFullyQualifiedNames: true,
+                        }),
                     }),
                     node.d.expr ?? node
                 );
@@ -1258,7 +1269,7 @@ export class Checker extends ParseTreeWalker {
                     DiagnosticRule.reportGeneralTypeIssues,
                     LocMessage.tupleIndexOutOfRange().format({
                         index: subscriptType.priv.literalValue,
-                        type: this._evaluator.printType(subtype),
+                        type: this._evaluator.printType(subtype, { useFullyQualifiedNames: true }),
                     }),
                     node
                 );
@@ -1869,8 +1880,8 @@ export class Checker extends ParseTreeWalker {
 
             diag.addMessage(
                 LocAddendum.conditionalRequiresBool().format({
-                    operandType: this._evaluator.printType(expandedSubtype),
-                    boolReturnType: this._evaluator.printType(boolReturnType),
+                    operandType: this._evaluator.printType(expandedSubtype, { useFullyQualifiedNames: true }),
+                    boolReturnType: this._evaluator.printType(boolReturnType, { useFullyQualifiedNames: true }),
                 })
             );
 
@@ -1881,7 +1892,7 @@ export class Checker extends ParseTreeWalker {
             this._evaluator.addDiagnostic(
                 DiagnosticRule.reportGeneralTypeIssues,
                 LocMessage.conditionalOperandInvalid().format({
-                    type: this._evaluator.printType(operandType),
+                    type: this._evaluator.printType(operandType, { useFullyQualifiedNames: true }),
                 }) + diag.getString(),
                 node
             );
@@ -2014,7 +2025,7 @@ export class Checker extends ParseTreeWalker {
             const diagAddendum = new DiagnosticAddendum();
             diagAddendum.addMessage(
                 LocAddendum.matchIsNotExhaustiveType().format({
-                    type: this._evaluator.printType(narrowedTypeResult.type),
+                    type: this._evaluator.printType(narrowedTypeResult.type, { useFullyQualifiedNames: true }),
                 })
             );
             diagAddendum.addMessage(LocAddendum.matchIsNotExhaustiveHint());
@@ -2108,8 +2119,14 @@ export class Checker extends ParseTreeWalker {
             this._evaluator.addDiagnostic(
                 DiagnosticRule.reportUnnecessaryContains,
                 getMessage().format({
-                    leftType: this._evaluator.printType(leftType, { expandTypeAlias: true }),
-                    rightType: this._evaluator.printType(elementType, { expandTypeAlias: true }),
+                    leftType: this._evaluator.printType(leftType, {
+                        expandTypeAlias: true,
+                        useFullyQualifiedNames: true,
+                    }),
+                    rightType: this._evaluator.printType(elementType, {
+                        expandTypeAlias: true,
+                        useFullyQualifiedNames: true,
+                    }),
                 }),
                 node
             );
@@ -2218,8 +2235,14 @@ export class Checker extends ParseTreeWalker {
                     this._evaluator.addDiagnostic(
                         DiagnosticRule.reportUnnecessaryComparison,
                         getMessage().format({
-                            leftType: this._evaluator.printType(leftType, { expandTypeAlias: true }),
-                            rightType: this._evaluator.printType(rightType, { expandTypeAlias: true }),
+                            leftType: this._evaluator.printType(leftType, {
+                                expandTypeAlias: true,
+                                useFullyQualifiedNames: true,
+                            }),
+                            rightType: this._evaluator.printType(rightType, {
+                                expandTypeAlias: true,
+                                useFullyQualifiedNames: true,
+                            }),
                         }),
                         node
                     );
@@ -2249,8 +2272,14 @@ export class Checker extends ParseTreeWalker {
             });
 
             if (!isComparable) {
-                const leftTypeText = this._evaluator.printType(leftType, { expandTypeAlias: true });
-                const rightTypeText = this._evaluator.printType(rightType, { expandTypeAlias: true });
+                const leftTypeText = this._evaluator.printType(leftType, {
+                    expandTypeAlias: true,
+                    useFullyQualifiedNames: true,
+                });
+                const rightTypeText = this._evaluator.printType(rightType, {
+                    expandTypeAlias: true,
+                    useFullyQualifiedNames: true,
+                });
 
                 this._evaluator.addDiagnostic(
                     DiagnosticRule.reportUnnecessaryComparison,
@@ -2316,8 +2345,9 @@ export class Checker extends ParseTreeWalker {
 
             this._evaluator.addDiagnostic(
                 DiagnosticRule.reportInvalidTypeForm,
-                errorMessage.format({ yieldType: this._evaluator.printType(AnyType.create()) }) +
-                    diagAddendum.getString(),
+                errorMessage.format({
+                    yieldType: this._evaluator.printType(AnyType.create(), { useFullyQualifiedNames: true }),
+                }) + diagAddendum.getString(),
                 node.d.returnAnnotation ?? node.d.name
             );
         }
@@ -2481,7 +2511,9 @@ export class Checker extends ParseTreeWalker {
                 if (isTypeVarTuple(usage.typeVar)) {
                     altTypeText = '"tuple[object, ...]"';
                 } else if (usage.typeVar.shared.boundType) {
-                    altTypeText = `"${this._evaluator.printType(convertToInstance(usage.typeVar.shared.boundType))}"`;
+                    altTypeText = `"${this._evaluator.printType(convertToInstance(usage.typeVar.shared.boundType), {
+                        useFullyQualifiedNames: true,
+                    })}"`;
                 } else {
                     altTypeText = '"object"';
                 }
@@ -2813,8 +2845,8 @@ export class Checker extends ParseTreeWalker {
         ) {
             returnDiag.addMessage(
                 LocAddendum.functionReturnTypeMismatch().format({
-                    sourceType: this._evaluator.printType(overloadReturnType),
-                    destType: this._evaluator.printType(implReturnType),
+                    sourceType: this._evaluator.printType(overloadReturnType, { useFullyQualifiedNames: true }),
+                    destType: this._evaluator.printType(implReturnType, { useFullyQualifiedNames: true }),
                 })
             );
             diag?.addAddendum(returnDiag);
@@ -2999,7 +3031,7 @@ export class Checker extends ParseTreeWalker {
                     if (!derivesFromBaseException(exceptionSubtype)) {
                         diag.addMessage(
                             LocMessage.exceptionTypeIncorrect().format({
-                                type: this._evaluator.printType(exceptionSubtype),
+                                type: this._evaluator.printType(exceptionSubtype, { useFullyQualifiedNames: true }),
                             })
                         );
                     }
@@ -3026,7 +3058,7 @@ export class Checker extends ParseTreeWalker {
 
                 diag.addMessage(
                     LocMessage.exceptionTypeIncorrect().format({
-                        type: this._evaluator.printType(exceptionSubtype),
+                        type: this._evaluator.printType(exceptionSubtype, { useFullyQualifiedNames: true }),
                     })
                 );
             }
@@ -3051,7 +3083,7 @@ export class Checker extends ParseTreeWalker {
             this._evaluator.addDiagnostic(
                 DiagnosticRule.reportGeneralTypeIssues,
                 LocMessage.exceptionTypeNotClass().format({
-                    type: this._evaluator.printType(exceptionType),
+                    type: this._evaluator.printType(exceptionType, { useFullyQualifiedNames: true }),
                 }),
                 errorNode
             );
@@ -3925,10 +3957,10 @@ export class Checker extends ParseTreeWalker {
                 DiagnosticRule.reportArgumentType,
                 isInstanceCheck
                     ? LocMessage.isInstanceInvalidType().format({
-                          type: this._evaluator.printType(arg1Type),
+                          type: this._evaluator.printType(arg1Type, { useFullyQualifiedNames: true }),
                       }) + diag.getString()
                     : LocMessage.isSubclassInvalidType().format({
-                          type: this._evaluator.printType(arg1Type),
+                          type: this._evaluator.printType(arg1Type, { useFullyQualifiedNames: true }),
                       }) + diag.getString(),
                 node.d.args[1]
             );
@@ -4022,8 +4054,8 @@ export class Checker extends ParseTreeWalker {
                 this._evaluator.addDiagnostic(
                     DiagnosticRule.reportUnnecessaryIsInstance,
                     messageTemplate.format({
-                        testType: this._evaluator.printType(arg0Type),
-                        classType: this._evaluator.printType(classType),
+                        testType: this._evaluator.printType(arg0Type, { useFullyQualifiedNames: true }),
+                        classType: this._evaluator.printType(classType, { useFullyQualifiedNames: true }),
                     }),
                     node
                 );
@@ -4673,8 +4705,8 @@ export class Checker extends ParseTreeWalker {
                     this._evaluator.addDiagnostic(
                         DiagnosticRule.reportGeneralTypeIssues,
                         LocMessage.typeIsReturnType().format({
-                            type: this._evaluator.printType(paramType),
-                            returnType: this._evaluator.printType(narrowedType),
+                            type: this._evaluator.printType(paramType, { useFullyQualifiedNames: true }),
+                            returnType: this._evaluator.printType(narrowedType, { useFullyQualifiedNames: true }),
                         }),
                         returnAnnotation
                     );
@@ -4775,7 +4807,9 @@ export class Checker extends ParseTreeWalker {
                             this._evaluator.addDiagnostic(
                                 DiagnosticRule.reportReturnType,
                                 LocMessage.returnMissing().format({
-                                    returnType: this._evaluator.printType(declaredReturnType),
+                                    returnType: this._evaluator.printType(declaredReturnType, {
+                                        useFullyQualifiedNames: true,
+                                    }),
                                 }) + diagAddendum?.getString(),
                                 returnAnnotation
                             );
@@ -4823,7 +4857,10 @@ export class Checker extends ParseTreeWalker {
             this._evaluator.addDiagnostic(
                 DiagnosticRule.reportUnknownParameterType,
                 LocMessage.returnTypePartiallyUnknown().format({
-                    returnType: this._evaluator.printType(returnType, { expandTypeAlias: true }),
+                    returnType: this._evaluator.printType(returnType, {
+                        expandTypeAlias: true,
+                        useFullyQualifiedNames: true,
+                    }),
                 }),
                 node.d.name
             );
@@ -5593,8 +5630,8 @@ export class Checker extends ParseTreeWalker {
                     mainDecl.node.nodeType === ParseNodeType.Function ? mainDecl.node.d.name : mainDecl.node;
 
                 const diagAddendum = new DiagnosticAddendum();
-                const initSignature = this._evaluator.printType(initMemberType);
-                const newSignature = this._evaluator.printType(newMemberType);
+                const initSignature = this._evaluator.printType(initMemberType, { useFullyQualifiedNames: true });
+                const newSignature = this._evaluator.printType(newMemberType, { useFullyQualifiedNames: true });
 
                 diagAddendum.addMessage(
                     LocAddendum.initMethodSignature().format({
@@ -5692,16 +5729,26 @@ export class Checker extends ParseTreeWalker {
                             if (isTypeSame(baseClassObject, baseClassMroObject)) {
                                 diag.addMessage(
                                     LocAddendum.baseClassIncompatible().format({
-                                        baseClass: this._evaluator.printType(baseClassObject),
-                                        type: this._evaluator.printType(matchingMroObject),
+                                        baseClass: this._evaluator.printType(baseClassObject, {
+                                            useFullyQualifiedNames: true,
+                                        }),
+                                        type: this._evaluator.printType(matchingMroObject, {
+                                            useFullyQualifiedNames: true,
+                                        }),
                                     })
                                 );
                             } else {
                                 diag.addMessage(
                                     LocAddendum.baseClassIncompatibleSubclass().format({
-                                        baseClass: this._evaluator.printType(baseClassObject),
-                                        subclass: this._evaluator.printType(baseClassMroObject),
-                                        type: this._evaluator.printType(matchingMroObject),
+                                        baseClass: this._evaluator.printType(baseClassObject, {
+                                            useFullyQualifiedNames: true,
+                                        }),
+                                        subclass: this._evaluator.printType(baseClassMroObject, {
+                                            useFullyQualifiedNames: true,
+                                        }),
+                                        type: this._evaluator.printType(matchingMroObject, {
+                                            useFullyQualifiedNames: true,
+                                        }),
                                     })
                                 );
                             }
@@ -6022,8 +6069,10 @@ export class Checker extends ParseTreeWalker {
     ) {
         diag.addRelatedInfo(
             LocAddendum.baseClassOverriddenType().format({
-                baseClass: this._evaluator.printType(convertToInstance(overriddenClass)),
-                type: this._evaluator.printType(overriddenType),
+                baseClass: this._evaluator.printType(convertToInstance(overriddenClass), {
+                    useFullyQualifiedNames: true,
+                }),
+                type: this._evaluator.printType(overriddenType, { useFullyQualifiedNames: true }),
             }),
             overriddenDecl.uri,
             overriddenDecl.range
@@ -6031,8 +6080,10 @@ export class Checker extends ParseTreeWalker {
 
         diag.addRelatedInfo(
             LocAddendum.baseClassOverridesType().format({
-                baseClass: this._evaluator.printType(convertToInstance(overrideClass)),
-                type: this._evaluator.printType(overrideType),
+                baseClass: this._evaluator.printType(convertToInstance(overrideClass), {
+                    useFullyQualifiedNames: true,
+                }),
+                type: this._evaluator.printType(overrideType, { useFullyQualifiedNames: true }),
             }),
             overrideDecl.uri,
             overrideDecl.range
@@ -6334,7 +6385,7 @@ export class Checker extends ParseTreeWalker {
                         diag.addMessage(
                             LocAddendum.typedDictClosedExtraTypeMismatch().format({
                                 name,
-                                type: this._evaluator.printType(entry.valueType),
+                                type: this._evaluator.printType(entry.valueType, { useFullyQualifiedNames: true }),
                             })
                         );
                     } else if (!baseTypedDictEntries.extraItems.isReadOnly && entry.isReadOnly) {
@@ -6368,7 +6419,9 @@ export class Checker extends ParseTreeWalker {
                     diag.addMessage(
                         LocAddendum.typedDictClosedExtraTypeMismatch().format({
                             name: 'extra_items',
-                            type: this._evaluator.printType(typedDictEntries.extraItems.valueType),
+                            type: this._evaluator.printType(typedDictEntries.extraItems.valueType, {
+                                useFullyQualifiedNames: true,
+                            }),
                         })
                     );
                 }
@@ -6383,7 +6436,7 @@ export class Checker extends ParseTreeWalker {
                             DiagnosticRule.reportIncompatibleVariableOverride,
                             LocMessage.typedDictClosedExtras().format({
                                 name: baseClass.shared.name,
-                                type: this._evaluator.printType(baseExtraItemsType),
+                                type: this._evaluator.printType(baseExtraItemsType, { useFullyQualifiedNames: true }),
                             }) + diag.getString(),
                             declNode
                         );
@@ -6518,7 +6571,9 @@ export class Checker extends ParseTreeWalker {
             DiagnosticRule.reportImplicitOverride,
             LocMessage.overrideDecoratorMissing().format({
                 name: funcNode.d.name.d.value,
-                className: this._evaluator.printType(convertToInstance(baseMember.classType)),
+                className: this._evaluator.printType(convertToInstance(baseMember.classType), {
+                    useFullyQualifiedNames: true,
+                }),
             }),
             funcNode.d.name
         );
@@ -6727,7 +6782,7 @@ export class Checker extends ParseTreeWalker {
                     LocMessage.methodOverridden().format({
                         name: memberName,
                         className: baseClass.shared.name,
-                        type: this._evaluator.printType(overrideType),
+                        type: this._evaluator.printType(overrideType, { useFullyQualifiedNames: true }),
                     }),
                     getNameNodeForDeclaration(lastDecl) ?? lastDecl.node
                 );
@@ -6831,8 +6886,8 @@ export class Checker extends ParseTreeWalker {
                     diagAddendum.addMessage(LocAddendum.overrideIsInvariant());
                     diagAddendum.createAddendum().addMessage(
                         LocAddendum.overrideInvariantMismatch().format({
-                            overrideType: this._evaluator.printType(overrideType),
-                            baseType: this._evaluator.printType(baseType),
+                            overrideType: this._evaluator.printType(overrideType, { useFullyQualifiedNames: true }),
+                            baseType: this._evaluator.printType(baseType, { useFullyQualifiedNames: true }),
                         })
                     );
                 }
@@ -7401,7 +7456,7 @@ export class Checker extends ParseTreeWalker {
                     DiagnosticRule.reportGeneralTypeIssues,
                     LocMessage.clsSelfParamTypeMismatch().format({
                         name: paramInfo.name,
-                        classType: this._evaluator.printType(expectedType),
+                        classType: this._evaluator.printType(expectedType, { useFullyQualifiedNames: true }),
                     }),
                     paramAnnotation
                 );

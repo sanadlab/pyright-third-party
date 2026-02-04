@@ -1508,14 +1508,20 @@ export function createTypeEvaluator(
             if (isUnion(typeResult.type)) {
                 doForEachSubtype(typeResult.type, (subtype) => {
                     if (!isEffectivelyInstantiable(subtype, { honorTypeVarBounds: true })) {
-                        diag.addMessage(LocAddendum.typeNotClass().format({ type: printType(subtype) }));
+                        diag.addMessage(
+                            LocAddendum.typeNotClass().format({
+                                type: printType(subtype, { useFullyQualifiedNames: true }),
+                            })
+                        );
                     }
                 });
             }
 
             addDiagnostic(
                 DiagnosticRule.reportGeneralTypeIssues,
-                LocMessage.typeExpectedClass().format({ type: printType(typeResult.type) }) + diag.getString(),
+                LocMessage.typeExpectedClass().format({
+                    type: printType(typeResult.type, { useFullyQualifiedNames: true }),
+                }) + diag.getString(),
                 node
             );
 
@@ -3058,7 +3064,9 @@ export function createTypeEvaluator(
             if (errorNode && !typeResult.isIncomplete) {
                 addDiagnostic(
                     DiagnosticRule.reportGeneralTypeIssues,
-                    LocMessage.typeNotAwaitable().format({ type: printType(subtype) }) + diag?.getString(),
+                    LocMessage.typeNotAwaitable().format({
+                        type: printType(subtype, { useFullyQualifiedNames: true }),
+                    }) + diag?.getString(),
                     errorNode
                 );
             }
@@ -3151,7 +3159,7 @@ export function createTypeEvaluator(
                             iterReturnTypeDiag.addMessage(
                                 LocMessage.methodNotDefinedOnType().format({
                                     name: nextMethodName,
-                                    type: printType(subtype),
+                                    type: printType(subtype, { useFullyQualifiedNames: true }),
                                 })
                             );
                         } else {
@@ -3195,7 +3203,9 @@ export function createTypeEvaluator(
             if (!isIncomplete && emitNotIterableError) {
                 addDiagnostic(
                     DiagnosticRule.reportGeneralTypeIssues,
-                    LocMessage.typeNotIterable().format({ type: printType(subtype) }) + diag.getString(),
+                    LocMessage.typeNotIterable().format({
+                        type: printType(subtype, { useFullyQualifiedNames: true }),
+                    }) + diag.getString(),
                     errorNode
                 );
             }
@@ -3242,7 +3252,7 @@ export function createTypeEvaluator(
             if (emitNotIterableError) {
                 addDiagnostic(
                     DiagnosticRule.reportGeneralTypeIssues,
-                    LocMessage.typeNotIterable().format({ type: printType(subtype) }),
+                    LocMessage.typeNotIterable().format({ type: printType(subtype, { useFullyQualifiedNames: true }) }),
                     errorNode
                 );
             }
@@ -4078,7 +4088,7 @@ export function createTypeEvaluator(
                             ? LocAddendum.listAssignmentMismatch()
                             : LocAddendum.tupleAssignmentMismatch()
                         ).format({
-                            type: printType(subtype),
+                            type: printType(subtype, { useFullyQualifiedNames: true }),
                         })
                     );
 
@@ -4114,7 +4124,7 @@ export function createTypeEvaluator(
                     ? LocMessage.listAssignmentMismatch()
                     : LocMessage.tupleAssignmentMismatch()
                 ).format({
-                    type: printType(typeResult.type),
+                    type: printType(typeResult.type, { useFullyQualifiedNames: true }),
                 }) + diagAddendum.getString(),
                 target
             );
@@ -4672,7 +4682,7 @@ export function createTypeEvaluator(
                     if (!derivesFromClassRecursive(concreteSubtype, baseExceptionType, /* ignoreUnknown */ false)) {
                         diag.addMessage(
                             LocMessage.exceptionTypeIncorrect().format({
-                                type: printType(subtype),
+                                type: printType(subtype, { useFullyQualifiedNames: true }),
                             })
                         );
                     } else {
@@ -4691,7 +4701,7 @@ export function createTypeEvaluator(
                         if (callResult && callResult.argumentErrors) {
                             diag.addMessage(
                                 LocMessage.exceptionTypeNotInstantiable().format({
-                                    type: printType(subtype),
+                                    type: printType(subtype, { useFullyQualifiedNames: true }),
                                 })
                             );
                         }
@@ -4706,14 +4716,14 @@ export function createTypeEvaluator(
                     ) {
                         diag.addMessage(
                             LocMessage.exceptionTypeIncorrect().format({
-                                type: printType(subtype),
+                                type: printType(subtype, { useFullyQualifiedNames: true }),
                             })
                         );
                     }
                 } else {
                     diag.addMessage(
                         LocMessage.exceptionTypeIncorrect().format({
-                            type: printType(subtype),
+                            type: printType(subtype, { useFullyQualifiedNames: true }),
                         })
                     );
                 }
@@ -5810,7 +5820,7 @@ export function createTypeEvaluator(
                         addDiagnostic(
                             DiagnosticRule.reportGeneralTypeIssues,
                             LocMessage.typeVarNoMember().format({
-                                type: printType(baseType),
+                                type: printType(baseType, { useFullyQualifiedNames: true }),
                                 name: memberName,
                             }),
                             node.d.leftExpr
@@ -6176,7 +6186,10 @@ export function createTypeEvaluator(
 
                 addDiagnostic(
                     rule,
-                    diagMessage.format({ name: memberName, type: printType(baseType) }) + diag.getString(),
+                    diagMessage.format({
+                        name: memberName,
+                        type: printType(baseType, { useFullyQualifiedNames: true }),
+                    }) + diag.getString(),
                     node.d.member,
                     diag.getEffectiveTextRange() ?? node.d.member
                 );
@@ -6499,7 +6512,7 @@ export function createTypeEvaluator(
                 if (!usage.setType.isIncomplete) {
                     diag?.addMessage(
                         LocAddendum.memberAssignment().format({
-                            type: printType(usage.setType.type),
+                            type: printType(usage.setType.type, { useFullyQualifiedNames: true }),
                             name: memberName,
                             classType: printObjectTypeForClass(classType),
                         })
@@ -6518,7 +6531,9 @@ export function createTypeEvaluator(
             ) {
                 diag?.addMessage(
                     LocAddendum.dataClassFrozen().format({
-                        name: printType(ClassType.cloneAsInstance(memberInfo.classType)),
+                        name: printType(ClassType.cloneAsInstance(memberInfo.classType), {
+                            useFullyQualifiedNames: true,
+                        }),
                     })
                 );
 
@@ -6680,7 +6695,7 @@ export function createTypeEvaluator(
             diag?.addMessage(
                 LocAddendum.descriptorAccessBindingFailed().format({
                     name: accessMethodName,
-                    className: printType(convertToInstance(methodClassType)),
+                    className: printType(convertToInstance(methodClassType), { useFullyQualifiedNames: true }),
                 })
             );
 
@@ -7411,7 +7426,7 @@ export function createTypeEvaluator(
             addDiagnostic(
                 DiagnosticRule.reportInvalidTypeForm,
                 LocMessage.typeArgsTooMany().format({
-                    name: printType(aliasBaseType),
+                    name: printType(aliasBaseType, { useFullyQualifiedNames: true }),
                     expected: typeParams.length,
                     received: typeArgs.length,
                 }),
@@ -7422,7 +7437,7 @@ export function createTypeEvaluator(
             addDiagnostic(
                 DiagnosticRule.reportInvalidTypeForm,
                 LocMessage.typeArgsTooFew().format({
-                    name: printType(aliasBaseType),
+                    name: printType(aliasBaseType, { useFullyQualifiedNames: true }),
                     expected: typeParams.length,
                     received: typeArgs.length,
                 }),
@@ -7574,8 +7589,8 @@ export function createTypeEvaluator(
                             const messageDiag = diag.createAddendum();
                             messageDiag.addMessage(
                                 LocAddendum.varianceMismatchForTypeAlias().format({
-                                    typeVarName: printType(typeArgType),
-                                    typeAliasParam: printType(typeParams[index]),
+                                    typeVarName: printType(typeArgType, { useFullyQualifiedNames: true }),
+                                    typeAliasParam: printType(typeParams[index], { useFullyQualifiedNames: true }),
                                 })
                             );
                             messageDiag.addTextRange(typeArgs[index].node);
@@ -7604,7 +7619,9 @@ export function createTypeEvaluator(
         if (!diag.isEmpty()) {
             addDiagnostic(
                 DiagnosticRule.reportInvalidTypeForm,
-                LocMessage.typeNotSpecializable().format({ type: printType(aliasBaseType) }) + diag.getString(),
+                LocMessage.typeNotSpecializable().format({
+                    type: printType(aliasBaseType, { useFullyQualifiedNames: true }),
+                }) + diag.getString(),
                 node,
                 diag.getEffectiveTextRange() ?? node
             );
@@ -7718,7 +7735,7 @@ export function createTypeEvaluator(
                         addDiagnostic(
                             DiagnosticRule.reportGeneralTypeIssues,
                             LocMessage.typeVarNotSubscriptable().format({
-                                type: printType(unexpandedSubtype),
+                                type: printType(unexpandedSubtype, { useFullyQualifiedNames: true }),
                             }),
                             node.d.leftExpr
                         );
@@ -7750,7 +7767,9 @@ export function createTypeEvaluator(
                             addDiagnostic(
                                 DiagnosticRule.reportInvalidTypeArguments,
                                 LocMessage.typeArgsExpectingNone().format({
-                                    name: printType(ClassType.cloneAsInstance(concreteSubtype)),
+                                    name: printType(ClassType.cloneAsInstance(concreteSubtype), {
+                                        useFullyQualifiedNames: true,
+                                    }),
                                 }),
                                 node
                             );
@@ -7859,7 +7878,10 @@ export function createTypeEvaluator(
                         addDiagnostic(
                             DiagnosticRule.reportInvalidTypeArguments,
                             LocMessage.classAlreadySpecialized().format({
-                                type: printType(convertToInstance(concreteSubtype), { expandTypeAlias: true }),
+                                type: printType(convertToInstance(concreteSubtype), {
+                                    expandTypeAlias: true,
+                                    useFullyQualifiedNames: true,
+                                }),
                             }),
                             node.d.leftExpr
                         );
@@ -7911,7 +7933,9 @@ export function createTypeEvaluator(
                 if (!isIncomplete) {
                     addDiagnostic(
                         DiagnosticRule.reportIndexIssue,
-                        LocMessage.typeNotSubscriptable().format({ type: printType(concreteSubtype) }),
+                        LocMessage.typeNotSubscriptable().format({
+                            type: printType(concreteSubtype, { useFullyQualifiedNames: true }),
+                        }),
                         node.d.leftExpr
                     );
                 }
@@ -8099,7 +8123,7 @@ export function createTypeEvaluator(
                 DiagnosticRule.reportIndexIssue,
                 LocMessage.methodNotDefinedOnType().format({
                     name: magicMethodName,
-                    type: printType(baseType),
+                    type: printType(baseType, { useFullyQualifiedNames: true }),
                 }),
                 node.d.leftExpr
             );
@@ -8927,7 +8951,7 @@ export function createTypeEvaluator(
         const type = typeResult.type;
 
         const exprString = ParseTreeUtils.printExpression(arg0Value);
-        const typeString = printType(type, { expandTypeAlias: true });
+        const typeString = printType(type, { expandTypeAlias: true, useFullyQualifiedNames: true });
 
         if (!typeResult.isIncomplete) {
             if (expectedText !== undefined) {
@@ -8945,7 +8969,7 @@ export function createTypeEvaluator(
 
             if (expectedRevealType) {
                 if (!isTypeSame(expectedRevealType, type, { ignorePseudoGeneric: true })) {
-                    const expectedRevealTypeText = printType(expectedRevealType);
+                    const expectedRevealTypeText = printType(expectedRevealType, { useFullyQualifiedNames: true });
                     addDiagnostic(
                         DiagnosticRule.reportGeneralTypeIssues,
                         LocMessage.revealTypeExpectedTypeMismatch().format({
@@ -8988,7 +9012,7 @@ export function createTypeEvaluator(
                     infoMessages.push(
                         LocAddendum.typeOfSymbol().format({
                             name,
-                            type: printType(typeOfSymbol, { expandTypeAlias: true }),
+                            type: printType(typeOfSymbol, { expandTypeAlias: true, useFullyQualifiedNames: true }),
                         })
                     );
                 }
@@ -9027,7 +9051,9 @@ export function createTypeEvaluator(
             ) {
                 addDiagnostic(
                     DiagnosticRule.reportArgumentType,
-                    LocMessage.superCallFirstArg().format({ type: printType(targetClassType) }),
+                    LocMessage.superCallFirstArg().format({
+                        type: printType(targetClassType, { useFullyQualifiedNames: true }),
+                    }),
                     node.d.args[0].d.valueExpr
                 );
             }
@@ -9112,7 +9138,9 @@ export function createTypeEvaluator(
             if (reportError) {
                 addDiagnostic(
                     DiagnosticRule.reportArgumentType,
-                    LocMessage.superCallSecondArg().format({ type: printType(targetClassType) }),
+                    LocMessage.superCallSecondArg().format({
+                        type: printType(targetClassType, { useFullyQualifiedNames: true }),
+                    }),
                     node.d.args[1].d.valueExpr
                 );
 
@@ -9721,7 +9749,9 @@ export function createTypeEvaluator(
             if (!canSkipDiagnosticForNode(errorNode)) {
                 const overloads = OverloadedType.getOverloads(type);
                 const functionName =
-                    overloads.length > 0 && overloads[0].shared.name
+                    overloads.length > 0 && overloads[0].shared.fullName
+                        ? overloads[0].shared.fullName
+                        : overloads.length > 0 && overloads[0].shared.name
                         ? overloads[0].shared.name
                         : '<anonymous function>';
                 const diagAddendum = new DiagnosticAddendum();
@@ -9766,7 +9796,8 @@ export function createTypeEvaluator(
             // If there is more than one filtered match, report that no match
             // was possible and emit a diagnostic that provides the most likely.
             if (emitNoOverloadFoundError) {
-                const functionName = bestMatch.overload.shared.name || '<anonymous function>';
+                const functionName =
+                    bestMatch.overload.shared.fullName || bestMatch.overload.shared.name || '<anonymous function>';
                 const diagnostic = addDiagnostic(
                     DiagnosticRule.reportCallIssue,
                     LocMessage.noOverload().format({ name: functionName }),
@@ -9987,7 +10018,10 @@ export function createTypeEvaluator(
             addDiagnostic(
                 DiagnosticRule.reportCallIssue,
                 LocMessage.objectNotCallable().format({
-                    type: printType(callTypeResult.type.props.specialForm, { expandTypeAlias: true }),
+                    type: printType(callTypeResult.type.props.specialForm, {
+                        expandTypeAlias: true,
+                        useFullyQualifiedNames: true,
+                    }),
                 }),
                 exprNode
             );
@@ -10191,7 +10225,7 @@ export function createTypeEvaluator(
             addDiagnostic(
                 DiagnosticRule.reportCallIssue,
                 LocMessage.callableNotInstantiable().format({
-                    type: printType(type),
+                    type: printType(type, { useFullyQualifiedNames: true }),
                 }),
                 errorNode
             );
@@ -10436,7 +10470,7 @@ export function createTypeEvaluator(
                     addDiagnostic(
                         DiagnosticRule.reportCallIssue,
                         LocMessage.objectNotCallable().format({
-                            type: printType(expandedCallType),
+                            type: printType(expandedCallType, { useFullyQualifiedNames: true }),
                         }),
                         errorNode
                     );
@@ -10830,7 +10864,7 @@ export function createTypeEvaluator(
                 addDiagnostic(
                     DiagnosticRule.reportUnnecessaryCast,
                     LocMessage.unnecessaryCast().format({
-                        type: printType(castFromType),
+                        type: printType(castFromType, { useFullyQualifiedNames: true }),
                     }),
                     errorNode
                 );
@@ -12265,7 +12299,9 @@ export function createTypeEvaluator(
                         if (sawParamSpecArgs) {
                             addDiagnostic(
                                 DiagnosticRule.reportCallIssue,
-                                LocMessage.paramSpecArgsKwargsDuplicate().format({ type: printType(paramSpec) }),
+                                LocMessage.paramSpecArgsKwargsDuplicate().format({
+                                    type: printType(paramSpec, { useFullyQualifiedNames: true }),
+                                }),
                                 argParam.errorNode
                             );
                         }
@@ -12279,7 +12315,9 @@ export function createTypeEvaluator(
                         if (sawParamSpecKwargs) {
                             addDiagnostic(
                                 DiagnosticRule.reportCallIssue,
-                                LocMessage.paramSpecArgsKwargsDuplicate().format({ type: printType(paramSpec) }),
+                                LocMessage.paramSpecArgsKwargsDuplicate().format({
+                                    type: printType(paramSpec, { useFullyQualifiedNames: true }),
+                                }),
                                 argParam.errorNode
                             );
                         }
@@ -12673,7 +12711,7 @@ export function createTypeEvaluator(
                 addDiagnostic(
                     DiagnosticRule.reportCallIssue,
                     LocMessage.paramSpecArgsMissing().format({
-                        type: printType(functionParamSpec),
+                        type: printType(functionParamSpec, { useFullyQualifiedNames: true }),
                     }),
                     argErrorNode ?? errorNode
                 );
@@ -12696,7 +12734,7 @@ export function createTypeEvaluator(
         let expectedTypeDiag: DiagnosticAddendum | undefined;
         let isTypeIncomplete = !!typeResult?.isIncomplete;
         let isCompatible = true;
-        const functionName = typeResult?.type.shared.name;
+        const functionName = typeResult?.type.shared.fullName || typeResult?.type.shared.name;
         let skippedBareTypeVarExpectedType = false;
 
         if (argParam.argument.valueExpression) {
@@ -12876,8 +12914,8 @@ export function createTypeEvaluator(
                     !canSkipDiagnosticForNode(argParam.errorNode) &&
                     !isTypeIncomplete
                 ) {
-                    const argTypeText = printType(argType);
-                    const paramTypeText = printType(argParam.paramType);
+                    const argTypeText = printType(argType, { useFullyQualifiedNames: true });
+                    const paramTypeText = printType(argParam.paramType, { useFullyQualifiedNames: true });
 
                     let message: string;
                     if (argParam.paramName && !argParam.isParamNameSynthesized) {
@@ -12971,7 +13009,10 @@ export function createTypeEvaluator(
                         const diagAddendum = getDiagAddendum();
                         diagAddendum.addMessage(
                             LocAddendum.argumentType().format({
-                                type: printType(simplifiedType, { expandTypeAlias: true }),
+                                type: printType(simplifiedType, {
+                                    expandTypeAlias: true,
+                                    useFullyQualifiedNames: true,
+                                }),
                             })
                         );
                         addDiagnostic(
@@ -14864,7 +14905,9 @@ export function createTypeEvaluator(
         // Verify that the type is hashable.
         if (!isTypeHashable(type)) {
             const diag = new DiagnosticAddendum();
-            diag.addMessage(LocAddendum.unhashableType().format({ type: printType(type) }));
+            diag.addMessage(
+                LocAddendum.unhashableType().format({ type: printType(type, { useFullyQualifiedNames: true }) })
+            );
 
             const message = isDictKey ? LocMessage.unhashableDictKey() : LocMessage.unhashableSetEntry();
 
@@ -15326,7 +15369,7 @@ export function createTypeEvaluator(
                 diagAddendum.addMessage(
                     LocAddendum.typeOfSymbol().format({
                         name: nameValue,
-                        type: printType(simplifiedType, { expandTypeAlias: true }),
+                        type: printType(simplifiedType, { expandTypeAlias: true, useFullyQualifiedNames: true }),
                     })
                 );
                 addDiagnostic(
@@ -28609,21 +28652,11 @@ export function createTypeEvaluator(
         destType: Type,
         options?: PrintTypeOptions
     ): { sourceType: string; destType: string } {
-        const simpleSrcType = printType(srcType, options);
-        const simpleDestType = printType(destType, options);
-
-        if (simpleSrcType !== simpleDestType) {
-            return { sourceType: simpleSrcType, destType: simpleDestType };
-        }
-
+        // Always use FQN for error messages
         const fullSrcType = printType(srcType, { ...(options ?? {}), useFullyQualifiedNames: true });
         const fullDestType = printType(destType, { ...(options ?? {}), useFullyQualifiedNames: true });
 
-        if (fullSrcType !== fullDestType) {
-            return { sourceType: fullSrcType, destType: fullDestType };
-        }
-
-        return { sourceType: simpleSrcType, destType: simpleDestType };
+        return { sourceType: fullSrcType, destType: fullDestType };
     }
 
     function isTypeFormSupported(node: ParseNode) {

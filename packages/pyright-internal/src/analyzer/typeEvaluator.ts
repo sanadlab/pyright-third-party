@@ -3643,7 +3643,7 @@ export function createTypeEvaluator(
                 return undefined;
             }
         }
-        const enrichedMessage = message + (sourceFileInfo ? classifyModuleSource(sourceFileInfo) : '');
+        const enrichedMessage = sourceFileInfo ? classifyModuleSource(sourceFileInfo) + message : message;
         const diagnostic = addDiagnosticWithSuppressionCheck(diagLevel, enrichedMessage, node, range);
         if (diagnostic) {
             diagnostic.setRule(rule);
@@ -3664,7 +3664,7 @@ export function createTypeEvaluator(
         if (diagLevel === 'none') {
             return undefined;
         }
-        const enrichedMessage = message + (sourceFileInfo ? classifyModuleSource(sourceFileInfo) : '');
+        const enrichedMessage = sourceFileInfo ? classifyModuleSource(sourceFileInfo) + message : message;
         const diagnostic = fileInfo.diagnosticSink.addDiagnosticWithTextRange(diagLevel, enrichedMessage, range);
         if (rule) {
             diagnostic.setRule(rule);
@@ -12983,7 +12983,8 @@ export function createTypeEvaluator(
                         DiagnosticRule.reportArgumentType,
                         message + diag?.getString(),
                         argParam.errorNode,
-                        diag?.getEffectiveTextRange() ?? argParam.errorNode
+                        diag?.getEffectiveTextRange() ?? argParam.errorNode,
+                        AnalyzerNodeInfo.getFileInfo(typeResult?.type.shared.declaration?.node ?? argParam.errorNode)
                     );
                 }
             }

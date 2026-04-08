@@ -3643,7 +3643,7 @@ export function createTypeEvaluator(
                 return undefined;
             }
         }
-        const enrichedMessage = sourceFileInfo ? classifyModuleSource(sourceFileInfo) + message : message;
+        const enrichedMessage = message + (sourceFileInfo ? classifyModuleSource(sourceFileInfo) : '');
         const diagnostic = addDiagnosticWithSuppressionCheck(diagLevel, enrichedMessage, node, range);
         if (diagnostic) {
             diagnostic.setRule(rule);
@@ -3664,7 +3664,7 @@ export function createTypeEvaluator(
         if (diagLevel === 'none') {
             return undefined;
         }
-        const enrichedMessage = sourceFileInfo ? classifyModuleSource(sourceFileInfo) + message : message;
+        const enrichedMessage = sourceFileInfo ? classifyModuleSource(sourceFileInfo) + message : '';
         const diagnostic = fileInfo.diagnosticSink.addDiagnosticWithTextRange(diagLevel, enrichedMessage, range);
         if (rule) {
             diagnostic.setRule(rule);
@@ -3725,6 +3725,13 @@ export function createTypeEvaluator(
             const boundDeclaredType = makeTypeVarsBound(declaredType, liveScopeIds);
             const srcType = makeTypeVarsBound(typeResult.type, liveScopeIds);
 
+            let sourceDeclNode: ParseNode | undefined;
+            if (isFunction(srcType) && srcType.shared.declaration) {
+                sourceDeclNode = srcType.shared.declaration.node;
+            } else if (isClass(srcType) && srcType.shared.declaration) {
+                sourceDeclNode = srcType.shared.declaration.node;
+            }
+
             if (!assignType(boundDeclaredType, srcType, diagAddendum)) {
                 // If there was an expected type mismatch, use that diagnostic
                 // addendum because it will be more informative.
@@ -3738,7 +3745,8 @@ export function createTypeEvaluator(
                         LocMessage.typeAssignmentMismatch().format(printSrcDestTypes(typeResult.type, declaredType)) +
                             diagAddendum.getString(),
                         srcExpression ?? nameNode,
-                        diagAddendum.getEffectiveTextRange() ?? srcExpression ?? nameNode
+                        diagAddendum.getEffectiveTextRange() ?? srcExpression ?? nameNode,
+                        AnalyzerNodeInfo.getFileInfo(sourceDeclNode ?? nameNode)
                     );
                 }
 

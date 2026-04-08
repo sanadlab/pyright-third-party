@@ -3602,7 +3602,13 @@ export function createTypeEvaluator(
         return ` [user – ${moduleName}]`;
     }
 
-    function addDiagnostic(rule: DiagnosticRule, message: string, node: ParseNode, range?: TextRange) {
+    function addDiagnostic(
+        rule: DiagnosticRule,
+        message: string,
+        node: ParseNode,
+        range?: TextRange,
+        sourceFileInfo?: AnalyzerFileInfo
+    ) {
         const fileInfo = AnalyzerNodeInfo.getFileInfo(node);
         const diagLevel = fileInfo.diagnosticRuleSet[rule] as DiagnosticLevel;
 
@@ -3637,8 +3643,8 @@ export function createTypeEvaluator(
                 return undefined;
             }
         }
-
-        const diagnostic = addDiagnosticWithSuppressionCheck(diagLevel, message, node, range);
+        const enrichedMessage = message + (sourceFileInfo ? classifyModuleSource(sourceFileInfo) : '');
+        const diagnostic = addDiagnosticWithSuppressionCheck(diagLevel, enrichedMessage, node, range);
         if (diagnostic) {
             diagnostic.setRule(rule);
         }
@@ -3650,15 +3656,16 @@ export function createTypeEvaluator(
         fileInfo: AnalyzerFileInfo,
         rule: DiagnosticRule,
         message: string,
-        range: TextRange
+        range: TextRange,
+        sourceFileInfo?: AnalyzerFileInfo
     ) {
         const diagLevel = fileInfo.diagnosticRuleSet[rule] as DiagnosticLevel;
 
         if (diagLevel === 'none') {
             return undefined;
         }
-
-        const diagnostic = fileInfo.diagnosticSink.addDiagnosticWithTextRange(diagLevel, message, range);
+        const enrichedMessage = message + (sourceFileInfo ? classifyModuleSource(sourceFileInfo) : '');
+        const diagnostic = fileInfo.diagnosticSink.addDiagnosticWithTextRange(diagLevel, enrichedMessage, range);
         if (rule) {
             diagnostic.setRule(rule);
         }

@@ -3585,6 +3585,23 @@ export function createTypeEvaluator(
         return suppressedEntries.every((entry) => !entry.suppressedDiags);
     }
 
+    function classifyModuleSource(sourceFileInfo: AnalyzerFileInfo): string {
+        const moduleName = sourceFileInfo.moduleName.split('.')[0];
+        if (sourceFileInfo.isTypingStubFile || sourceFileInfo.isTypingExtensionsStubFile) {
+            return ` [stdlib:typing – ${moduleName}]`;
+        }
+        if (sourceFileInfo.isBuiltInStubFile) {
+            return ` [stdlib:builtin – ${moduleName}]`;
+        }
+        if (sourceFileInfo.isTypeshedStubFile) {
+            return ` [stdlib – ${moduleName}]`;
+        }
+        if (sourceFileInfo.isStubFile || sourceFileInfo.isInPyTypedPackage) {
+            return ` [third-party – ${moduleName}]`;
+        }
+        return ` [user – ${moduleName}]`;
+    }
+
     function addDiagnostic(rule: DiagnosticRule, message: string, node: ParseNode, range?: TextRange) {
         const fileInfo = AnalyzerNodeInfo.getFileInfo(node);
         const diagLevel = fileInfo.diagnosticRuleSet[rule] as DiagnosticLevel;

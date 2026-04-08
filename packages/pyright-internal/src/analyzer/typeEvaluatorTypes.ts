@@ -861,13 +861,15 @@ export interface TypeEvaluator {
         rule: DiagnosticRule,
         message: string,
         node: ParseNode,
-        range?: TextRange
+        range?: TextRange,
+        sourceFileInfo?: AnalyzerFileInfo
     ) => Diagnostic | undefined;
     addDiagnosticForTextRange: (
         fileInfo: AnalyzerFileInfo,
         rule: DiagnosticRule,
         message: string,
-        range: TextRange
+        range: TextRange,
+        sourceFileInfo?: AnalyzerFileInfo
     ) => Diagnostic | undefined;
 
     printType: (type: Type, options?: PrintTypeOptions) => string;
